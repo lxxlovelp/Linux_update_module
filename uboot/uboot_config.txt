@@ -1,0 +1,40 @@
+# --- 1. 基础地址与硬件配置 ---
+setenv kernel_addr_r 0x80800000
+setenv fdt_addr_r 0x83000000
+# 【新增】为 initrd 分配一个内存加载地址 (放在 0x84000000 避免和内核、设备树冲突)
+setenv ramdisk_addr_r 0x84000000
+setenv devnum 1
+
+# --- 2. 分区号映射 ---
+setenv part_k_A 5
+setenv part_k_B 6
+setenv part_d_A 7
+setenv part_d_B 8
+setenv part_r_A 9
+setenv part_r_B 10
+
+setenv boot_slot A
+setenv upgrade_available 0
+setenv bootcount 0
+setenv bootlimit 3
+
+# --- 3. 动态加载参数 (现在还需要判断 part_r 也就是 rootfs 的分区号) ---
+setenv set_slot_args 'if test "${boot_slot}" = "B"; then setenv part_k ${part_k_B}; setenv part_d ${part_d_B}; setenv part_r ${part_r_B}; else setenv boot_slot A; setenv part_k ${part_k_A}; setenv part_d ${part_d_A}; setenv part_r ${part_r_A}; fi;'
+
+# --- 4. 读取 Kernel、DTB 和 Initrd ---
+# 【修改】除了读 kernel 和 dtb，现在还要用 part size 获取 part_r 大小，把它读到 ramdisk_addr_r 中
+setenv load_images 'part start mmc ${devnum} ${part_k} k_start; part size mmc ${devnum} ${part_k} k_size; mmc read ${kernel_addr_r} ${k_start} ${k_size}; part start mmc ${devnum} ${part_d} d_start; part size mmc ${devnum} ${part_d} d_size; mmc read ${fdt_addr_r} ${d_start} ${d_size}; part start mmc ${devnum} ${part_r} r_start; part size mmc ${devnum} ${part_r} r_size; mmc read ${ramdisk_addr_r} ${r_start} ${r_size};'
+
+# --- 5. 设置 Bootargs ---
+# 【修改】内核不需要去 eMMC 找 root=/dev/mmcblk0p9 了，改为从 RAM 启动
+setenv set_bootargs 'setenv bootargs console=ttymxc0,115200 root=/dev/ram0 rw'
+
+# --- 6. OTA 安全回滚 (保持不变) ---
+setenv ota_check 'if test "${upgrade_available}" = "1"; then setexpr bootcount ${bootcount} + 1; saveenv; if test ${bootcount} -gt ${bootlimit}; then echo "OTA Boot Failed! Rolling back..."; setenv upgrade_available 0; setenv bootcount 0; if test "${boot_slot}" = "B"; then setenv boot_slot A; else setenv boot_slot B; fi; saveenv; fi; fi;'
+
+# --- 7. 启动引导命令 ---
+# 【核心修改】用 ${ramdisk_addr_r} 替换掉原本的减号 "-" ！！！
+# 另外，由于是原始镜像块读取，U-Boot 的 bootz 通常要求告知 ramdisk 大小，用 ${ramdisk_addr_r}:${r_size} (或者实际的16进制字节数，具体看你的 initrd.img 是否带 uboot header)。如果不带 header，可以先尝试直接传地址。
+setenv bootcmd 'run ota_check; run set_slot_args; run set_bootargs; run load_images; bootz ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}'
+
+saveenv

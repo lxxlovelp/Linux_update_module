@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统维护管理页面</title>
+
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Microsoft YaHei", "PingFang SC", system-ui, -apple-system, sans-serif;
+        color: #1f2937;
+        background:
+            radial-gradient(circle at 10% 10%, rgba(64, 158, 255, 0.12), transparent 30%),
+            radial-gradient(circle at 90% 90%, rgba(103, 194, 58, 0.10), transparent 30%),
+            #f4f7fb;
+    }
+
+    /* 顶部导航 */
+    .header {
+        height: 72px;
+        background: rgba(255, 255, 255, 0.92);
+        border-bottom: 1px solid #e8edf3;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 50px;
+        backdrop-filter: blur(12px);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        font-size: 20px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .brand-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        background: linear-gradient(135deg, #409eff, #1677ff);
+        box-shadow: 0 6px 15px rgba(64, 158, 255, 0.28);
+    }
+
+    .system-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        background: #67c23a;
+        border-radius: 50%;
+        box-shadow: 0 0 0 4px rgba(103, 194, 58, 0.12);
+    }
+
+    /* 主体 */
+    .container {
+        width: min(1050px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 48px 0 60px;
+    }
+
+    .hero {
+        margin-bottom: 30px;
+    }
+
+    .hero h1 {
+        margin: 0 0 10px;
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        color: #172033;
+    }
+
+    .hero p {
+        margin: 0;
+        color: #718096;
+        font-size: 15px;
+    }
+
+    /* 状态栏 */
+    .overview {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .overview-item {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #e8edf3;
+        border-radius: 14px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        box-shadow: 0 5px 18px rgba(31, 41, 55, 0.04);
+    }
+
+    .overview-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        background: #eef6ff;
+    }
+
+    .overview-text small {
+        display: block;
+        color: #94a3b8;
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .overview-text strong {
+        font-size: 15px;
+        color: #334155;
+    }
+
+    /* 卡片 */
+    .cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+    }
+
+    .card {
+        background: rgba(255, 255, 255, 0.96);
+        border: 1px solid #e8edf3;
+        border-radius: 18px;
+        padding: 28px;
+        box-shadow: 0 10px 30px rgba(31, 41, 55, 0.06);
+        transition: all 0.25s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 35px rgba(31, 41, 55, 0.09);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .card-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+    .upload-icon {
+        color: #1677ff;
+        background: #eaf4ff;
+    }
+
+    .download-icon {
+        color: #42a52b;
+        background: #edf9e9;
+    }
+
+    .card-title h2 {
+        margin: 0 0 4px;
+        font-size: 17px;
+        color: #1e293b;
+    }
+
+    .card-title p {
+        margin: 0;
+        color: #94a3b8;
+        font-size: 12px;
+    }
+
+    /* 上传区域 */
+    .upload-area {
+        border: 1.5px dashed #cbd5e1;
+        border-radius: 13px;
+        padding: 28px 20px;
+        text-align: center;
+        background: #f8fafc;
+        transition: all 0.2s ease;
+    }
+
+    .upload-area:hover {
+        border-color: #409eff;
+        background: #f4f9ff;
+    }
+
+    .upload-symbol {
+        font-size: 30px;
+        margin-bottom: 10px;
+    }
+
+    .upload-text {
+        font-size: 14px;
+        color: #475569;
+        margin-bottom: 5px;
+    }
+
+    .upload-tip {
+        color: #94a3b8;
+        font-size: 12px;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .choose-btn {
+        display: inline-block;
+        margin-top: 16px;
+        padding: 8px 17px;
+        border-radius: 7px;
+        background: #ffffff;
+        color: #409eff;
+        border: 1px solid #b8d9ff;
+        cursor: pointer;
+        font-size: 13px;
+        transition: 0.2s;
+    }
+
+    .choose-btn:hover {
+        background: #409eff;
+        color: white;
+    }
+
+    .file-name {
+        margin-top: 13px;
+        font-size: 13px;
+        color: #409eff;
+        min-height: 18px;
+        word-break: break-all;
+    }
+
+    /* 下载信息 */
+    .download-box {
+        background: #f7fbf5;
+        border: 1px solid #e0f0da;
+        border-radius: 13px;
+        padding: 22px;
+        margin-bottom: 18px;
+    }
+
+    .package-row {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .package-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: #eaf7e5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+    }
+
+    .package-info strong {
+        display: block;
+        font-size: 14px;
+        color: #334155;
+        margin-bottom: 5px;
+    }
+
+    .package-info span {
+        font-size: 12px;
+        color: #94a3b8;
+    }
+
+    /* 按钮 */
+    .action-btn {
+        width: 100%;
+        border: none;
+        border-radius: 9px;
+        padding: 11px 18px;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .upload-btn {
+        background: linear-gradient(135deg, #409eff, #1677ff);
+        box-shadow: 0 5px 13px rgba(64, 158, 255, 0.22);
+    }
+
+    .download-btn {
+        background: linear-gradient(135deg, #67c23a, #4cae2c);
+        box-shadow: 0 5px 13px rgba(103, 194, 58, 0.20);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.04);
+    }
+
+    .action-btn:active {
+        transform: translateY(0);
+    }
+
+    .action-btn:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* 状态信息 */
+    .status {
+        min-height: 20px;
+        margin-top: 14px;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #64748b;
+    }
+
+    /* 底部 */
+    .footer {
+        text-align: center;
+        margin-top: 35px;
+        color: #a0aec0;
+        font-size: 12px;
+    }
+
+    /* 响应式 */
+    @media (max-width: 760px) {
+        .header {
+            padding: 0 20px;
+        }
+
+        .system-status {
+            display: none;
+        }
+
+        .container {
+            width: min(100% - 28px, 600px);
+            padding-top: 32px;
+        }
+
+        .hero h1 {
+            font-size: 26px;
+        }
+
+        .overview {
+            grid-template-columns: 1fr;
+        }
+
+        .cards {
+            grid-template-columns: 1fr;
+        }
+
+        .card {
+            padding: 22px;
+        }
+    }
+</style>
+
+</head>
+
+<body>
+
+<!-- 顶部 -->
+<header class="header">
+    <div class="brand">
+        <div class="brand-icon">⚙</div>
+        <span>系统维护管理</span>
+    </div>
+
+    <div class="system-status">
+        <span class="status-dot"></span>
+        系统运行正常
+    </div>
+</header>
+
+
+<!-- 主体 -->
+<main class="container">
+
+    <section class="hero">
+        <h1>系统维护管理页面</h1>
+        <p>管理系统升级包，执行升级包上传与下载操作。</p>
+    </section>
+
+
+    <!-- 系统概览 -->
+    <section class="overview">
+
+        <div class="overview-item">
+            <div class="overview-icon">🖥️</div>
+            <div class="overview-text">
+                <small>系统状态</small>
+                <strong>运行正常</strong>
+            </div>
+        </div>
+
+        <div class="overview-item">
+            <div class="overview-icon">📦</div>
+            <div class="overview-text">
+                <small>升级包管理</small>
+                <strong>支持在线更新</strong>
+            </div>
+        </div>
+
+        <div class="overview-item">
+            <div class="overview-icon">🔒</div>
+            <div class="overview-text">
+                <small>维护状态</small>
+                <strong>安全运行中</strong>
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- 功能卡片 -->
+    <section class="cards">
+
+        <!-- 上传 -->
+        <div class="card">
+
+            <div class="card-header">
+                <div class="card-icon upload-icon">⬆</div>
+
+                <div class="card-title">
+                    <h2>上传新升级包</h2>
+                    <p>上传新的系统升级文件</p>
+                </div>
+            </div>
+
+            <div class="upload-area">
+
+                <div class="upload-symbol">📦</div>
+
+                <div class="upload-text">
+                    选择需要上传的升级包
+                </div>
+
+                <div class="upload-tip">
+                    支持 ZIP、TAR.GZ、BIN 格式
+                </div>
+
+                <label class="choose-btn" for="packageFile">
+                    选择文件
+                </label>
+
+                <input
+                    class="file-input"
+                    type="file"
+                    id="packageFile"
+                    accept=".zip,.tar.gz,.bin"
+                    onchange="showFileName()"
+                >
+
+                <div id="fileName" class="file-name"></div>
+
+            </div>
+
+            <button
+                id="uploadBtn"
+                class="action-btn upload-btn"
+                onclick="uploadPackage()"
+            >
+                上传升级包
+            </button>
+
+            <div id="uploadStatus" class="status"></div>
+
+        </div>
+
+
+        <!-- 下载 -->
+        <div class="card">
+
+            <div class="card-header">
+                <div class="card-icon download-icon">⬇</div>
+
+                <div class="card-title">
+                    <h2>下载当前系统包</h2>
+                    <p>获取服务器上的最新系统升级包</p>
+                </div>
+            </div>
+
+            <div class="download-box">
+
+                <div class="package-row">
+
+                    <div class="package-icon">📄</div>
+
+                    <div class="package-info">
+                        <strong>当前系统升级包</strong>
+                        <span>服务器最新版本 · 可直接下载</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <button
+                id="downloadBtn"
+                class="action-btn download-btn"
+                onclick="downloadPackage()"
+            >
+                下载当前系统包
+            </button>
+
+            <div id="downloadStatus" class="status"></div>
+
+        </div>
+
+    </section>
+
+
+    <div class="footer">
+        系统维护管理平台 · Upgrade Package Management
+    </div>
+
+</main>
+
+
+<script>
+
+    // 显示选择的文件名
+    function showFileName() {
+
+        const fileInput = document.getElementById("packageFile");
+        const fileName = document.getElementById("fileName");
+
+        if (fileInput.files.length === 0) {
+            fileName.innerText = "";
+            return;
+        }
+
+        fileName.innerText = "已选择： " + fileInput.files[0].name;
+    }
+
+
+    // 上传升级包
+    async function uploadPackage() {
+
+        const fileInput = document.getElementById("packageFile");
+        const status = document.getElementById("uploadStatus");
+        const button = document.getElementById("uploadBtn");
+
+        if (fileInput.files.length === 0) {
+            status.innerText = "⚠️ 请先选择升级包文件";
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        status.innerText = "⏳ 正在上传，请稍候...";
+        button.disabled = true;
+        button.innerText = "正在上传...";
+
+        try {
+
+            // 对应 C++：
+            // svr.Post("/api/upload_package", ...)
+
+            const response = await fetch("/api/upload_package", {
+                method: "POST",
+                body: formData
+            });
+
+            const text = await response.text();
+
+            if (response.ok) {
+                status.innerText = "✅ 升级包上传成功！";
+            } else {
+                status.innerText = "❌ 上传失败：" + text;
+            }
+
+        } catch (error) {
+
+            status.innerText = "❌ 网络请求错误：" + error.message;
+
+        } finally {
+
+            button.disabled = false;
+            button.innerText = "上传升级包";
+        }
+    }
+
+
+    // 下载升级包
+    async function downloadPackage() {
+
+        const status = document.getElementById("downloadStatus");
+        const button = document.getElementById("downloadBtn");
+
+        status.innerText = "⏳ 正在请求下载...";
+        button.disabled = true;
+        button.innerText = "正在准备下载...";
+
+        try {
+
+            // 对应 C++：
+            // svr.Get("/api/download_package", ...)
+
+            const response = await fetch(
+                "/api/download_package",
+                {
+                    method: "GET"
+                }
+            );
+
+            if (!response.ok) {
+
+                const text = await response.text();
+
+                throw new Error(
+                    text || "文件不存在或服务器错误"
+                );
+            }
+
+            // 将二进制流转换为 Blob
+            const blob = await response.blob();
+
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+
+            a.style.display = "none";
+            a.href = url;
+
+            // 默认下载文件名
+            a.download = "system_update_package.zip";
+
+            document.body.appendChild(a);
+
+            a.click();
+
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            status.innerText = "✅ 下载任务已触发";
+
+        } catch (error) {
+
+            status.innerText =
+                "❌ 下载失败：" + error.message;
+
+        } finally {
+
+            button.disabled = false;
+            button.innerText = "下载当前系统包";
+        }
+    }
+
+</script>
+
+
+</body>
+</html>
